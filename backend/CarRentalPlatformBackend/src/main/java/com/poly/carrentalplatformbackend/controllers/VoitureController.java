@@ -40,7 +40,7 @@ public class VoitureController {
 
     @PutMapping("/update")
 
-    public void updateProduit(@RequestBody Voiture voiture){
+    public void updateVoiture(@RequestBody Voiture voiture){
         voitureService.updateVoiture(voiture);
     }
     @PostMapping("/add")

@@ -22,6 +22,12 @@ public class Voiture {
     private Double prixParJour;
     private String statut;
 
+    @ManyToOne
+    @JoinColumn(name = "categorie_id") // clé étrangère
+    private Categorie categorie;
+
+
+
 
 
 
