@@ -1,8 +1,11 @@
 package com.poly.carrentalplatformbackend.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,11 +23,22 @@ public class Voiture {
     private String modele;
     private String matricule;
     private Double prixParJour;
-    private String statut;
+    @Enumerated(EnumType.STRING)
+    private VoitureStatus statut;
 
     @ManyToOne
     @JoinColumn(name = "categorie_id") // clé étrangère
     private Categorie categorie;
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "voiture", cascade = CascadeType.ALL)
+    private List<Reservation> reservations;
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "voiture", cascade = CascadeType.ALL)
+    private List<Maintenance> maintenances;
 
 
 

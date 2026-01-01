@@ -1,0 +1,121 @@
+package com.poly.carrentalplatformbackend.services;
+
+import com.poly.carrentalplatformbackend.entities.*;
+import com.poly.carrentalplatformbackend.repositories.ReservationRepository;
+import com.poly.carrentalplatformbackend.repositories.VoitureRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+@Service
+@AllArgsConstructor
+public class ReservationServiceImpl implements ReservationService {
+
+    private ReservationRepository reservationRepository;
+    private VoitureRepository voitureRepository;
+    private UserRepository userRepository;
+
+    // ================= READ =================
+
+    @Override
+    public Reservation getReservation(int id) {
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+    }
+
+    @Override
+    public List<Reservation> getReservations() {
+        return reservationRepository.findByStatusNot(ReservationStatus.CANCELLED);
+    }
+
+    @Override
+    public List<Reservation> findByClientId(int clientId) {
+        return reservationRepository.findByUserIdAndStatusNot(clientId, ReservationStatus.CANCELLED);
+    }
+
+    // ================= CREATE =================
+
+    @Override
+    public Reservation createReservation(Reservation reservation) {
+
+
+        if (reservation.getVoiture() == null || reservation.getVoiture().getIdVoiture() == 0)
+            throw new IllegalArgumentException("voiture.idVoiture obligatoire");
+
+        if (reservation.getUser() == null || reservation.getUser().getId() == 0)
+            throw new IllegalArgumentException("user.id obligatoire");
+
+        if (reservation.getStartDate() == null || reservation.getEndDate() == null)
+            throw new IllegalArgumentException("startDate et endDate obligatoires");
+
+        // charger depuis DB
+        Voiture voiture = voitureRepository.findById(reservation.getVoiture().getIdVoiture())
+                .orElseThrow(() -> new RuntimeException("Voiture not found"));
+
+        User user = userRepository.findById(reservation.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        reservation.setVoiture(voiture);
+        reservation.setUser(user);
+
+        reservation.setStatus(ReservationStatus.PENDING);
+
+
+        double prix = calculatePrice(voiture, reservation.getStartDate(), reservation.getEndDate());
+        reservation.setPrix(prix);
+
+        return reservationRepository.save(reservation);
+    }
+
+    // ================= BUSINESS =================
+
+    @Override
+    public double calculatePrice(Voiture voiture, LocalDate start, LocalDate end) {
+
+        long days = ChronoUnit.DAYS.between(start, end);
+
+        if (days <= 0) {
+            throw new IllegalArgumentException("Dates invalides");
+        }
+
+        return days * voiture.getPrixParJour();
+    }
+
+    // ================= UPDATE =================
+
+    @Override
+    public Reservation updateReservationStatus(Reservation reservation, ReservationStatus status) {
+
+        reservation.setStatus(status);
+
+        Voiture voiture = voitureRepository.findById(reservation.getVoiture().getIdVoiture())
+                .orElseThrow(() -> new RuntimeException("Voiture not found"));
+
+        if (status == ReservationStatus.CONFIRMED) voiture.setStatut(VoitureStatus.RESERVEE);
+        if (status == ReservationStatus.CANCELLED) voiture.setStatut(VoitureStatus.DISPONIBLE);
+        if (status == ReservationStatus.COMPLETED) voiture.setStatut(VoitureStatus.DISPONIBLE);
+
+        voitureRepository.save(voiture);
+        return reservationRepository.save(reservation);
+    }
+
+    @Override
+    public Reservation cancelReservation(Reservation reservation) {
+        return updateReservationStatus(reservation, ReservationStatus.CANCELLED);
+    }
+
+    // ================= DELETE =================
+
+    @Override
+    public void deleteReservation(int id) {
+        reservationRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Reservation> getAllReservationsAdmin() {
+        return reservationRepository.findAll();
+    }
+}

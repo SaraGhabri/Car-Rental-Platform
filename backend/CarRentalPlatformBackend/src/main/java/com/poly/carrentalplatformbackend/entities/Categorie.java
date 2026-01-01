@@ -23,6 +23,7 @@ public class Categorie {
     private String description;
 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Voiture> voitures;
 

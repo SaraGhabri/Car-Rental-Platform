@@ -2,10 +2,12 @@ package com.poly.carrentalplatformbackend.controllers;
 
 
 import com.poly.carrentalplatformbackend.entities.Voiture;
+import com.poly.carrentalplatformbackend.entities.VoitureStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.poly.carrentalplatformbackend.services.VoitureService;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -46,6 +48,21 @@ public class VoitureController {
     @PostMapping("/add")
     public void addVoiture(@RequestBody Voiture voiture){
         voitureService.ajouterVoiture(voiture);
+    }
+
+    // Endpoint pour le client : voitures disponibles
+    @GetMapping("/available")
+    public List<Voiture> getAvailableVoitures() {
+        return voitureService.findAvailableVoitures();
+    }
+
+    // Endpoint pour l’admin : mettre à jour le statut d’une voiture
+    @PutMapping("/{id}/statut")
+    public void updateStatut(
+            @PathVariable int id,
+            @RequestParam VoitureStatus statut
+    ) {
+        voitureService.updateStatut(id, statut);
     }
 
 
