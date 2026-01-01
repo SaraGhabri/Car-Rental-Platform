@@ -1,13 +1,16 @@
 package com.poly.carrentalplatformbackend.services;
 
 import com.poly.carrentalplatformbackend.entities.*;
+import com.poly.carrentalplatformbackend.repositories.PaiementRepository;
 import com.poly.carrentalplatformbackend.repositories.ReservationRepository;
+import com.poly.carrentalplatformbackend.repositories.UserRepository;
 import com.poly.carrentalplatformbackend.repositories.VoitureRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -17,6 +20,7 @@ public class ReservationServiceImpl implements ReservationService {
     private ReservationRepository reservationRepository;
     private VoitureRepository voitureRepository;
     private UserRepository userRepository;
+    private PaiementRepository paiementRepository;
 
     // ================= READ =================
 
@@ -94,7 +98,17 @@ public class ReservationServiceImpl implements ReservationService {
         Voiture voiture = voitureRepository.findById(reservation.getVoiture().getIdVoiture())
                 .orElseThrow(() -> new RuntimeException("Voiture not found"));
 
-        if (status == ReservationStatus.CONFIRMED) voiture.setStatut(VoitureStatus.RESERVEE);
+        if (status == ReservationStatus.CONFIRMED){
+            voiture.setStatut(VoitureStatus.RESERVEE);
+            Paiement paiement = Paiement.builder()
+                    .montant(reservation.getPrix())
+                    .status(PaiementStatus.EN_ATTENTE)
+                    .datePaiement(new Date())
+                    .reservation(reservation)
+                    .build();
+
+            paiementRepository.save(paiement);
+        }
         if (status == ReservationStatus.CANCELLED) voiture.setStatut(VoitureStatus.DISPONIBLE);
         if (status == ReservationStatus.COMPLETED) voiture.setStatut(VoitureStatus.DISPONIBLE);
 
