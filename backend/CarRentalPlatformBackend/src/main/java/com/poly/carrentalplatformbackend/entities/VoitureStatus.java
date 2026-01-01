@@ -1,8 +1,8 @@
-package com.poly.carrentalplatformbackend.entities;
+    package com.poly.carrentalplatformbackend.entities;
 
-public enum VoitureStatus {
-    DISPONIBLE,
-    RESERVEE,
-    INDISPONIBLE
+    public enum VoitureStatus {
+        DISPONIBLE,
+        RESERVEE,
+        INDISPONIBLE
 
-}
+    }

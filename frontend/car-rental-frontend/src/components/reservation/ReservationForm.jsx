@@ -1,0 +1,85 @@
+import { useState, useEffect } from "react";
+import { createReservation } from "../../api/reservation.service";
+
+
+const ReservationForm = ({ voiture, userId, onClose }) => {
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [prix, setPrix] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    // Calcul automatique du prix
+    useEffect(() => {
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            setPrix(diff > 0 ? diff * voiture.prixParJour : 0);
+        }
+    }, [startDate, endDate, voiture]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        try {
+            await createReservation({
+                startDate: startDate,
+                endDate: endDate,
+                prix,
+                voiture: { idVoiture: voiture.idVoiture },
+                user: { id: 1 } // ID existant maintenant
+            });
+            alert("Réservation créée avec succès !");
+            onClose();
+        } catch (err) {
+            console.error(err);
+            setError("Erreur lors de la réservation");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="p-4 border rounded bg-white shadow-md">
+            <h2 className="text-xl font-bold mb-4">Réserver {voiture.marque} {voiture.modele}</h2>
+            <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                    <label className="block">Date de début :</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="border p-1 rounded w-full"
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="block">Date de fin :</label>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="border p-1 rounded w-full"
+                        required
+                    />
+                </div>
+                <div>
+                    <p>Prix total : <strong>{prix} TND</strong></p>
+                </div>
+                {error && <p className="text-red-500">{error}</p>}
+                <button
+                    type="submit"
+                    disabled={loading || prix <= 0}
+                    className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+                >
+                    {loading ? "Réservation..." : "Confirmer la réservation"}
+                </button>
+            </form>
+        </div>
+    );
+};
+
+export default ReservationForm;
