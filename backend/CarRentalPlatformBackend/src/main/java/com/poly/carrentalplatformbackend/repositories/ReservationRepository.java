@@ -13,10 +13,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     List<Reservation> findByUserId(int id);
 
     // Pour client / liste publique : exclure CANCELLED
-    List<Reservation> findByStatusNot(ReservationStatus status);
+    List<Reservation> findByUserUsernameAndStatusNot(
+            String username,
+            ReservationStatus status
+    );
 
-    // Pour un client : exclure CANCELLED
-    List<Reservation> findByUserIdAndStatusNot(int userId, ReservationStatus status);
+
 
 
 }

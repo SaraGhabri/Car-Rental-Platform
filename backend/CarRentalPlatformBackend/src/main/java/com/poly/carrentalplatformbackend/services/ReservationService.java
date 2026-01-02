@@ -16,7 +16,6 @@ public interface ReservationService {
      List<Reservation> getReservations();
 
      Reservation createReservation(Reservation reservation, String username);
-     List<Reservation> findByClientId(int clientId);
 
      double calculatePrice(Voiture voiture, LocalDate start, LocalDate end);
 

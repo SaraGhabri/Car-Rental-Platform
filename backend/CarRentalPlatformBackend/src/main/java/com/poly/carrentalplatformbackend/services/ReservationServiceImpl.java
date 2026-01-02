@@ -6,6 +6,7 @@ import com.poly.carrentalplatformbackend.repositories.ReservationRepository;
 import com.poly.carrentalplatformbackend.repositories.UserRepository;
 import com.poly.carrentalplatformbackend.repositories.VoitureRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -32,13 +33,20 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> getReservations() {
-        return reservationRepository.findByStatusNot(ReservationStatus.CANCELLED);
+
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return reservationRepository.findByUserUsernameAndStatusNot(
+                username,
+                ReservationStatus.CANCELLED
+        );
     }
 
-    @Override
-    public List<Reservation> findByClientId(int clientId) {
-        return reservationRepository.findByUserIdAndStatusNot(clientId, ReservationStatus.CANCELLED);
-    }
+
+
 
     // ================= CREATE =================
 

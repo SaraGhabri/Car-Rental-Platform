@@ -21,11 +21,11 @@
 
         private ReservationService reservationService;
 
-        // ================= CLIENT =================
+
 
         // Créer une réservation
 
-        @PostMapping("/api/reservations/create")
+        @PostMapping("/create")
         public Reservation createReservation(
                 @RequestBody Reservation reservation,
                 @AuthenticationPrincipal UserDetails userDetails
@@ -34,8 +34,8 @@
         }
 
 
-        // Voir toutes les réservations (client / admin selon sécurité)
-        @GetMapping("/")
+        // Voir toutes les réservations (client)
+        @GetMapping("/client")
         public List<Reservation> getAllReservations() {
             return reservationService.getReservations();
         }
@@ -52,11 +52,6 @@
             return reservationService.getReservation(id);
         }
 
-        // Voir les réservations d’un client
-        @GetMapping("/client/{clientId}")
-        public List<Reservation> getReservationsByClient(@PathVariable int clientId) {
-            return reservationService.findByClientId(clientId);
-        }
 
         // ================= ADMIN =================
 
