@@ -26,26 +26,76 @@ const Login = () => {
         setError("");
         setIsLoading(true);
 
+        console.log("🔐 Tentative de login avec:", username);
+
         try {
             const res = await authService.login({ username, password });
             const token = res.data.token;
 
-            try {
-                const decoded = jwtDecode(token);
-                const role = decoded.roles?.[0] || "ROLE_USER";
-                login(token, role);
+            console.log("✅ Token reçu:", token.substring(0, 50) + "...");
 
-                setTimeout(() => {
-                    navigate("/voitures");
-                }, 300);
+            // Décodage pour debug
+            const decoded = jwtDecode(token);
+            console.log("🔍 Token décodé COMPLET:", decoded);
 
-            } catch (jwtError) {
-                console.error("Erreur décodage JWT:", jwtError);
-                setError("Token d'authentification invalide");
+            // DEBUG: Affichez toutes les clés du token
+            console.log("🔑 Clés dans le token:", Object.keys(decoded));
+            console.log("🎭 decoded.roles:", decoded.roles);
+            console.log("🎭 decoded.role:", decoded.role);
+            console.log("🎭 decoded.authorities:", decoded.authorities);
+
+            // EXTRACTION DU RÔLE - ESSAYEZ DIFFÉRENTES OPTIONS
+            let role = "";
+
+            if (decoded.roles && Array.isArray(decoded.roles) && decoded.roles.length > 0) {
+                // Si le token contient déjà "ROLE_", gardez-le
+                // Sinon, ajoutez-le
+                const roleFromToken = decoded.roles[0];
+                role = roleFromToken.startsWith("ROLE_") ? roleFromToken : "ROLE_" + roleFromToken.toUpperCase();
+                console.log(`✅ Rôle extrait: ${decoded.roles[0]} -> ${role}`);
+            }
+            else if (decoded.role) {
+                // Option 2: role = "ADMIN"
+                role = "ROLE_" + decoded.role.toUpperCase();
+                console.log(`✅ Rôle extrait depuis 'role': ${decoded.role} -> ${role}`);
+            }
+            else if (decoded.authorities && Array.isArray(decoded.authorities)) {
+                // Option 3: authorities = ["ROLE_ADMIN"]
+                role = decoded.authorities[0];
+                console.log(`✅ Rôle extrait depuis 'authorities': ${role}`);
+            }
+            else {
+                // Option 4: Par défaut
+                role = "ROLE_USER";
+                console.log(`⚠️  Rôle par défaut: ${role}`);
             }
 
+            console.log("📦 Rôle final à stocker:", role);
+
+            // STOCKAGE DANS LOCALSTORAGE
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
+
+            // VÉRIFICATION IMMÉDIATE
+            console.log("💾 localStorage après stockage:");
+            console.log("- token:", localStorage.getItem("token")?.substring(0, 30) + "...");
+            console.log("- role:", localStorage.getItem("role"));
+            console.log("- Tous les items:", { ...localStorage });
+
+            // Mise à jour du contexte
+            login(token, role);
+
+            // Petit délai pour voir les logs
+            setTimeout(() => {
+                console.log("🔄 Redirection vers /voitures...");
+                navigate("/voitures");
+            }, 500);
+
         } catch (err) {
-            console.error("Erreur de connexion:", err);
+            console.error("❌ Erreur complète:", err);
+            console.error("Status:", err.response?.status);
+            console.error("Data:", err.response?.data);
+
             setError(err.response?.data?.message || "Nom d'utilisateur ou mot de passe incorrect");
         } finally {
             setIsLoading(false);

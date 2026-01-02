@@ -139,11 +139,14 @@ const ReservationForm = ({ voiture, onClose }) => {
         setLoading(true);
         setError("");
 
-        if (days < 1) {
-            setError("La durée minimum est de 1 jour");
-            setLoading(false);
-            return;
-        }
+        // DEBUG AVANT ENVOI
+        console.log("=== AVANT ENVOI RÉSERVATION ===");
+        console.log("Token:", localStorage.getItem("token"));
+        console.log("Données:", {
+            startDate,
+            endDate,
+            voiture: { idVoiture: voiture.idVoiture }
+        });
 
         try {
             const response = await createReservation({
@@ -152,16 +155,17 @@ const ReservationForm = ({ voiture, onClose }) => {
                 voiture: { idVoiture: voiture.idVoiture }
             });
 
+            console.log("✅ Réservation créée:", response.data);
             alert("✅ Réservation créée avec succès !");
             onClose();
+
         } catch (err) {
-            console.error("❌ Erreur:", err);
+            console.error("❌ Erreur création réservation:", err);
             setError(err.response?.data?.message || "Erreur lors de la réservation");
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <form onSubmit={handleSubmit}>
             {/* Informations véhicule */}
