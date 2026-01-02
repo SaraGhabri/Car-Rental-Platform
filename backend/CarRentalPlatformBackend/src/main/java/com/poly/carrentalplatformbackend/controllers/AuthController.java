@@ -31,16 +31,27 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/api/login")
-    public String login(@RequestBody AuthenticationRequest authenticationRequest) {
+    public AuthenticationResponse login(@RequestBody AuthenticationRequest request) {
 
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(), request.getPassword()
+                )
         );
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        return jwtService.generateToken(userDetails);
 
+        UserDetails userDetails =
+                userDetailsService.loadUserByUsername(request.getUsername());
 
+        String token = jwtService.generateToken(userDetails);
+
+        return new AuthenticationResponse(token);
     }
+    @Data
+    @AllArgsConstructor
+    class AuthenticationResponse {
+        private String token;
+    }
+
 
     //REGISTER
     @PostMapping("/api/register")

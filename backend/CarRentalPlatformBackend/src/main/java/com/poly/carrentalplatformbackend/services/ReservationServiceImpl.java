@@ -43,36 +43,31 @@ public class ReservationServiceImpl implements ReservationService {
     // ================= CREATE =================
 
     @Override
-    public Reservation createReservation(Reservation reservation) {
-
+    public Reservation createReservation(Reservation reservation, String username) {
 
         if (reservation.getVoiture() == null || reservation.getVoiture().getIdVoiture() == 0)
             throw new IllegalArgumentException("voiture.idVoiture obligatoire");
 
-        if (reservation.getUser() == null || reservation.getUser().getId() == 0)
-            throw new IllegalArgumentException("user.id obligatoire");
-
         if (reservation.getStartDate() == null || reservation.getEndDate() == null)
             throw new IllegalArgumentException("startDate et endDate obligatoires");
 
-        // charger depuis DB
         Voiture voiture = voitureRepository.findById(reservation.getVoiture().getIdVoiture())
                 .orElseThrow(() -> new RuntimeException("Voiture not found"));
 
-        User user = userRepository.findById(reservation.getUser().getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByUsername(username);
+        if (user == null)
+            throw new RuntimeException("User not found");
 
         reservation.setVoiture(voiture);
         reservation.setUser(user);
-
         reservation.setStatus(ReservationStatus.PENDING);
-
 
         double prix = calculatePrice(voiture, reservation.getStartDate(), reservation.getEndDate());
         reservation.setPrix(prix);
 
         return reservationRepository.save(reservation);
     }
+
 
     // ================= BUSINESS =================
 

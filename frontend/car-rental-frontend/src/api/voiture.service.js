@@ -1,8 +1,8 @@
+// src/api/voiture.service.js
 import api from "./axios";
 
 export const getAvailableVoitures = () =>
-    api.get("/voitures/available");
-
+    api.get("/voitures/available");  // Devient /api/voitures/available automatiquement
 
 export const getAllVoitures = () =>
     api.get("/voitures/all");

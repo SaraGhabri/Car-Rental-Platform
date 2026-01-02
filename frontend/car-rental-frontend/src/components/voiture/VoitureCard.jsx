@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ReservationForm from "../reservation/ReservationForm";
 
-const VoitureCard = ({ voiture, userId }) => {
+const VoitureCard = ({ voiture }) => {  // ← Enlevez userId
     const [showForm, setShowForm] = useState(false);
 
     return (
@@ -22,7 +22,6 @@ const VoitureCard = ({ voiture, userId }) => {
             {showForm && (
                 <ReservationForm
                     voiture={voiture}
-                    userId={1} // temporaire
                     onClose={() => setShowForm(false)}
                 />
             )}

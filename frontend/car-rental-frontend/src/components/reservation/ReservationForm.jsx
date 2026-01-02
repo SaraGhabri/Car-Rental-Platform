@@ -1,15 +1,23 @@
+// src/components/reservation/ReservationForm.jsx
 import { useState, useEffect } from "react";
 import { createReservation } from "../../api/reservation.service";
+import { useAuth } from "../../context/AuthContext";
 
-
-const ReservationForm = ({ voiture, userId, onClose }) => {
+const ReservationForm = ({ voiture, onClose }) => {
+    const { user } = useAuth();
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [prix, setPrix] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Calcul automatique du prix
+    // DEBUG: Vérifiez le token au chargement
+    useEffect(() => {
+        console.log("👤 User dans ReservationForm:", user);
+        console.log("🔑 Token direct:", localStorage.getItem("token"));
+        console.log("🧾 Tout localStorage:", { ...localStorage });
+    }, [user]);
+
     useEffect(() => {
         if (startDate && endDate) {
             const start = new Date(startDate);
@@ -24,19 +32,30 @@ const ReservationForm = ({ voiture, userId, onClose }) => {
         setLoading(true);
         setError("");
 
+        // DEBUG avant l'envoi
+        console.log("📤 Envoi réservation...");
+        console.log("🔑 Token avant envoi:", localStorage.getItem("token"));
+        console.log("📅 Dates:", { startDate, endDate });
+        console.log("🚗 Voiture ID:", voiture.idVoiture);
+
         try {
-            await createReservation({
-                startDate: startDate,
-                endDate: endDate,
-                prix,
-                voiture: { idVoiture: voiture.idVoiture },
-                user: { id: 1 } // ID existant maintenant
+            const response = await createReservation({
+                startDate,
+                endDate,
+                voiture: { idVoiture: voiture.idVoiture }
             });
+
+            console.log("✅ Réservation réussie:", response.data);
             alert("Réservation créée avec succès !");
             onClose();
         } catch (err) {
-            console.error(err);
-            setError("Erreur lors de la réservation");
+            console.error("❌ Erreur détaillée:", {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                headers: err.response?.headers
+            });
+            setError(err.response?.data?.message || "Erreur lors de la réservation");
         } finally {
             setLoading(false);
         }
