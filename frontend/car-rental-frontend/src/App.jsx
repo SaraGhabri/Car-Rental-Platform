@@ -1,116 +1,122 @@
 // src/App.jsx
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
 
-// Import Bootstrap
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+// Bootstrap
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-// Pages
+// Pages (public)
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-import Home from "./pages/Home";
+// Pages (admin)
+import Dashboard from "./pages/admin/Dashboard";
 import VoituresAdmin from "./pages/admin/VoituresAdmin";
 import CategoriesAdmin from "./pages/admin/CategoriesAdmin";
-import MaintenancesAdmin from "./pages/admin/MaintenancesAdmin";
-import Dashboard from "./pages/admin/Dashboard";
+import MaintenancesAdmin from "./pages/admin/MaintenanceAdmin";
 import PaiementsAdmin from "./pages/admin/PaiementsAdmin";
 import ReservationsAdmin from "./pages/admin/ReservationsAdmin";
+
+// Pages (user)
 import VoitureList from "./pages/user/VoitureList";
-import PaiementPage from "./pages/user/PaiementPage";
 import MesReservations from "./pages/user/MesReservations";
-import ProtectedRoute from "./components/ProtectedRoute"; 
+import PaiementPage from "./pages/user/PaiementPage";
 
-
+// Protection
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-    return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                   
-              
-                    
-                    <Route path="/admin/voitures" element={
-                        <ProtectedRoute>
-                          
-                                <VoituresAdmin />
-                   
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/categories" element={
-                        <ProtectedRoute>
-                  
-                                <CategoriesAdmin />
-                          
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/maintenances" element={
-                        <ProtectedRoute>
-                       
-                                <MaintenancesAdmin />
-                         
-                        </ProtectedRoute>
+          {/* ADMIN */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/voitures"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <VoituresAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <CategoriesAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/maintenances"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <MaintenancesAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reservations"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <ReservationsAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/paiements"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <PaiementsAdmin />
+              </ProtectedRoute>
+            }
+          />
 
-                    } />
-                    <Route path="/admin/dashboard" element={
-                        <ProtectedRoute>
-                     
-                                <Dashboard />
-                   
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/reservations" element={
-                        <ProtectedRoute>
-                            
-                                <ReservationsAdmin />
-                            
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/paiements" element={
-                        <ProtectedRoute>
-                          
-                                <PaiementsAdmin />
-                         
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/user/voitures" element={
-                        <ProtectedRoute>
-                           
-                                <VoitureList />
-                       
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/user/reservations" element={
-                        <ProtectedRoute>
-                        
-                                <MesReservations />
-                       
-                        </ProtectedRoute>
-                    } />
-                   
-                    <Route path="/paiement/:reservationId" element={
-                        <ProtectedRoute>
-                           
-                                <PaiementPage />
-                          
-                        </ProtectedRoute>
-                    } />
+          {/* USER */}
+          <Route
+            path="/user/voitures"
+            element={
+              <ProtectedRoute requiredRole="ROLE_USER">
+                <VoitureList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/reservations"
+            element={
+              <ProtectedRoute requiredRole="ROLE_USER">
+                <MesReservations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/paiement/:reservationId"
+            element={
+              <ProtectedRoute requiredRole="ROLE_USER">
+                <PaiementPage />
+              </ProtectedRoute>
+            }
+          />
 
-
-
-                    {/* Routes sans layout (fullscreen) */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path ="/" element={<Home />} />
-
-                  
-                     
-                </Routes>
-            </Router>
-        </AuthProvider>
-    );
+          {/* 404 */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }

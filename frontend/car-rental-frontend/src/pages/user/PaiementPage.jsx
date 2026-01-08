@@ -85,9 +85,7 @@ export default function PaiementPage() {
     return (
       <div className="container py-4">
         <div className="alert alert-danger">{error || "Données introuvables."}</div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate("/mes-reservations")}>
-          Retour
-        </button>
+        
       </div>
     );
   }
