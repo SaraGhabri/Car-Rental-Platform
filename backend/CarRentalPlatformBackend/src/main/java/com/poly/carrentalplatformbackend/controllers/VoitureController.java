@@ -21,7 +21,7 @@ public class VoitureController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Voiture> getAllVoitures() {
         return voitureService.getAllVoitures();
     }
@@ -36,7 +36,7 @@ public class VoitureController {
 
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteVoiture(@PathVariable int id){
         voitureService.deleteVoiture(id);
     }
@@ -44,12 +44,12 @@ public class VoitureController {
 
 
     @PutMapping("/update")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void updateVoiture(@RequestBody Voiture voiture){
         voitureService.updateVoiture(voiture);
     }
     @PostMapping("/add")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void addVoiture(@RequestBody Voiture voiture){
         voitureService.ajouterVoiture(voiture);
     }
@@ -61,7 +61,7 @@ public class VoitureController {
     }
 
     // Endpoint pour l’admin : mettre à jour le statut d’une voiture
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/statut")
     public void updateStatut(
             @PathVariable int id,

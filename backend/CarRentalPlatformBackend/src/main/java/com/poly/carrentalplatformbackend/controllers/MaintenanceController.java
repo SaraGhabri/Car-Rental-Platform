@@ -20,19 +20,19 @@ public class MaintenanceController {
     // ================= GET =================
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Maintenance getMaintenance(@PathVariable int id) {
         return maintenanceService.getMaintenance(id);
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Maintenance> getAllMaintenances() {
         return maintenanceService.getAllMaintenances();
     }
 
     @GetMapping("/voiture/{voitureId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Maintenance> getByVoiture(@PathVariable int voitureId) {
         return maintenanceService.getMaintenancesByVoiture(voitureId);
     }
@@ -40,7 +40,7 @@ public class MaintenanceController {
     // ================= POST =================
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Maintenance createMaintenance(@RequestBody Maintenance maintenance) {
         return maintenanceService.createMaintenance(maintenance);
     }
@@ -48,7 +48,7 @@ public class MaintenanceController {
     // ================= PUT =================
 
     @PutMapping("/{id}/terminer")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Maintenance terminerMaintenance(@PathVariable int id) {
         return maintenanceService.terminerMaintenance(id);
     }
@@ -56,7 +56,7 @@ public class MaintenanceController {
     // ================= DELETE =================
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteMaintenance(@PathVariable int id) {
         maintenanceService.deleteMaintenance(id);
     }

@@ -6,6 +6,7 @@ import com.poly.carrentalplatformbackend.entities.PaiementStatus;
 import com.poly.carrentalplatformbackend.entities.Reservation;
 import com.poly.carrentalplatformbackend.entities.ReservationStatus;
 import com.poly.carrentalplatformbackend.repositories.PaiementRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class PaiementServiceImpl implements PaiementService {
 
-    private  PaiementRepository paiementRepository;
-    private  ReservationService reservationService;
-
+    private final PaiementRepository paiementRepository;
+    private final ReservationService reservationService;
 
     // ================= READ =================
 
@@ -34,55 +34,69 @@ public class PaiementServiceImpl implements PaiementService {
     }
 
     // ================= CREATE =================
-    // Le paiement est créé UNIQUEMENT après validation admin
+    // Paiement autorisé uniquement si réservation CONFIRMED
 
     @Override
+    @Transactional
     public Paiement createPaiement(int reservationId) {
 
-        Reservation reservation = reservationService.getReservation(reservationId);
+        // ✅ si déjà créé -> on le renvoie (évite doublons)
+        return paiementRepository.findByReservationIdReservation(reservationId)
+                .orElseGet(() -> {
 
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException(
-                    "Le paiement n'est autorisé que pour une réservation confirmée"
-            );
-        }
+                    Reservation reservation = reservationService.getReservation(reservationId);
 
-        Paiement paiement = Paiement.builder()
-                .montant(reservation.getPrix())
-                .status(PaiementStatus.EN_ATTENTE)
-                .datePaiement(new Date())
-                .reservation(reservation)
-                .build();
+                    if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+                        throw new IllegalStateException(
+                                "Le paiement n'est autorisé que pour une réservation confirmée"
+                        );
+                    }
 
-        return paiementRepository.save(paiement);
+                    Paiement paiement = Paiement.builder()
+                            .montant(reservation.getPrix())
+                            .status(PaiementStatus.EN_ATTENTE)
+                            .datePaiement(new Date())
+                            .reservation(reservation)
+                            .build();
+
+                    return paiementRepository.save(paiement);
+                });
     }
 
     // ================= BUSINESS =================
 
     @Override
+    @Transactional
     public Paiement confirmerPaiement(int paiementId) {
-
         Paiement paiement = getPaiement(paiementId);
 
-        paiement.setStatus(PaiementStatus.PAYE);
+        // ✅ si déjà payé, on renvoie directement
+        if (paiement.getStatus() == PaiementStatus.PAYE) {
+            return paiement;
+        }
 
-        // La réservation est déjà CONFIRMED par l'admin
+        paiement.setStatus(PaiementStatus.PAYE);
+        paiement.setDatePaiement(new Date());
+
         return paiementRepository.save(paiement);
     }
 
     @Override
+    @Transactional
     public Paiement echouerPaiement(int paiementId) {
-
         Paiement paiement = getPaiement(paiementId);
 
-        paiement.setStatus(PaiementStatus.ECHEC);
+        // ✅ si déjà échec, on renvoie direct
+        if (paiement.getStatus() == PaiementStatus.ECHEC) {
+            return paiement;
+        }
 
-        // Échec paiement → annulation réservation
+        paiement.setStatus(PaiementStatus.ECHEC);
+        paiement.setDatePaiement(new Date());
+
+        // ✅ Échec -> annule la réservation
         Reservation reservation = paiement.getReservation();
-        reservationService.updateReservationStatus(
-                reservation,
-                ReservationStatus.CANCELLED
-        );
+        reservationService.updateReservationStatus(reservation, ReservationStatus.CANCELLED);
 
         return paiementRepository.save(paiement);
     }
@@ -91,8 +105,9 @@ public class PaiementServiceImpl implements PaiementService {
 
     @Override
     public void deletePaiement(int id) {
+        if (!paiementRepository.existsById(id)) {
+            throw new RuntimeException("Paiement introuvable");
+        }
         paiementRepository.deleteById(id);
     }
-
-
 }

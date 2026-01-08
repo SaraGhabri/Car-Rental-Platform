@@ -9,6 +9,7 @@ import com.poly.carrentalplatformbackend.repositories.VoitureRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -61,11 +62,16 @@ public class MaintenanceServiceImpl implements MaintenanceService {
     public Maintenance terminerMaintenance(int id) {
         Maintenance maintenance = getMaintenance(id);
 
+        // ✅ mettre à jour statut + date fin
         maintenance.setStatut(MaintenanceStatus.TERMINEE);
+        maintenance.setDateFin(LocalDate.now());
 
+        // ✅ remettre la voiture DISPONIBLE
         Voiture voiture = maintenance.getVoiture();
-        voiture.setStatut(VoitureStatus.DISPONIBLE);
-        voitureRepository.save(voiture);
+        if (voiture != null) {
+            voiture.setStatut(VoitureStatus.DISPONIBLE);
+            voitureRepository.save(voiture);
+        }
 
         return maintenanceRepository.save(maintenance);
     }

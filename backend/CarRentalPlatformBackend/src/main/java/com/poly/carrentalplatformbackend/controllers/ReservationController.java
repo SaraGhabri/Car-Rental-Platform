@@ -11,6 +11,7 @@
     import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 
+    import java.security.Principal;
     import java.util.List;
 
     @RestController
@@ -23,16 +24,13 @@
 
 
 
-        // Créer une réservation
-
         @PostMapping("/create")
         public Reservation createReservation(
                 @RequestBody Reservation reservation,
-                @AuthenticationPrincipal UserDetails userDetails
+                Principal principal
         ) {
-            return reservationService.createReservation(reservation, userDetails.getUsername());
+            return reservationService.createReservation(reservation, principal.getName());
         }
-
 
         // Voir toutes les réservations (client)
         @GetMapping("/client")
@@ -41,7 +39,7 @@
         }
 
         @GetMapping("/admin")
-        @PreAuthorize("hasAuthority('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public List<Reservation> getAllReservationsAdmin() {
             return reservationService.getAllReservationsAdmin();
         }
@@ -57,7 +55,7 @@
 
         // Confirmer une réservation
         @PutMapping("/{id}/confirm")
-        @PreAuthorize("hasAuthority('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public Reservation confirmReservation(@PathVariable int id) {
 
             Reservation reservation = reservationService.getReservation(id);
@@ -82,12 +80,12 @@
 
         // Supprimer une réservation
         @DeleteMapping("/{id}")
-        @PreAuthorize("hasAuthority('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public void deleteReservation(@PathVariable int id) {
             reservationService.deleteReservation(id);
         }
         @PutMapping("/{id}/finish")
-        @PreAuthorize("hasAuthority('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public Reservation finishReservation(@PathVariable int id) {
             Reservation reservation = reservationService.getReservation(id);
             return reservationService.updateReservationStatus(reservation, ReservationStatus.COMPLETED);

@@ -11,4 +11,5 @@ public interface CategorieService {
     Categorie updateCategorie(Categorie c);
     void deleteCategorie(int id);
     List<Categorie> getAllCategories();
+    Categorie getCategorie(int id);
 }
