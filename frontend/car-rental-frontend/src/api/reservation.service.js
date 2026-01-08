@@ -1,66 +1,37 @@
-// src/api/reservation.service.js
 import api from "./axios";
 
-export const createReservation = (reservationData) => {
-    console.log("📤 Création réservation avec données:", reservationData);
-    console.log("🔑 Token disponible:", localStorage.getItem("token")?.substring(0, 30) + "...");
-    console.log("🌐 URL complète:", api.defaults.baseURL + "/reservations/create");
+// ================= CREATE (CLIENT) =================
+export const createReservation = (reservationData) =>
+  api.post("/reservations/create", reservationData);
 
-    // CORRECTION : "/reservations/create" au lieu de "/api/reservations/create"
-    return api.post("/reservations/create", reservationData);
-};
+// ================= READ =================
 
-// Version avec debug amélioré
-export const createReservationDebug = async (reservationData) => {
-    const token = localStorage.getItem("token");
+// Client (ses propres réservations)
+export const getMyReservations = () =>
+  api.get("/reservations/client");
 
-    console.log("=== DEBUG CRÉATION RÉSERVATION ===");
-    console.log("Token:", token ? "✅ Présent" : "❌ Absent");
-    console.log("Données:", reservationData);
+// Admin (toutes les réservations)
+export const getAllReservationsAdmin = () =>
+  api.get("/reservations/admin");
 
-    try {
-        // Option 1: Utilisez l'instance axios
-        const response = await api.post("/reservations/create", reservationData);
-        console.log("✅ Réponse:", response.data);
-        return response;
+// Une réservation par ID
+export const getReservationById = (id) =>
+  api.get(`/reservations/${id}`);
 
-    } catch (error) {
-        console.error("❌ Erreur détaillée:");
-        console.error("- Status:", error.response?.status);
-        console.error("- Message:", error.response?.data);
-        console.error("- Headers:", error.config?.headers);
+// ================= ADMIN ACTIONS =================
 
-        // Testez directement avec fetch
-        await testDirectFetch(reservationData, token);
-        throw error;
-    }
-};
+// Confirmer
+export const confirmReservation = (id) =>
+  api.put(`/reservations/${id}/confirm`);
 
-// Test avec fetch pour voir l'erreur exacte
-const testDirectFetch = async (data, token) => {
-    console.log("🔍 Test avec fetch direct...");
+// Annuler
+export const cancelReservation = (id) =>
+  api.put(`/reservations/${id}/cancel`);
 
-    try {
-        const response = await fetch("http://localhost:8081/api/reservations/create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(data)
-        });
+// Terminer
+export const finishReservation = (id) =>
+  api.put(`/reservations/${id}/finish`);
 
-        console.log("📊 Fetch - Status:", response.status);
-        console.log("📊 Fetch - Status Text:", response.statusText);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("❌ Fetch - Erreur:", errorText);
-        } else {
-            const result = await response.json();
-            console.log("✅ Fetch - Succès:", result);
-        }
-    } catch (fetchError) {
-        console.error("❌ Fetch - Exception:", fetchError);
-    }
-};
+// Supprimer
+export const deleteReservation = (id) =>
+  api.delete(`/reservations/${id}`);

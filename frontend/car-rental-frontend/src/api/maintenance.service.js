@@ -1,23 +1,20 @@
-// src/api/maintenance.service.js
 import api from "./axios";
 
-// CORRECTION IMPORTANTE : pas de double /api
-export const getAllMaintenances = () => {
-    return api.get("/maintenances");  // ← /maintenances, pas /api/maintenances
-};
+// ✅ READ ALL (ADMIN)
+export const getAllMaintenances = () => api.get("/maintenances");
 
-export const getMaintenanceById = (id) => {
-    return api.get(`/maintenances/${id}`);
-};
+// ✅ READ ONE (ADMIN)
+export const getMaintenanceById = (id) => api.get(`/maintenances/${id}`);
 
-export const createMaintenance = (maintenanceData) => {
-    return api.post("/maintenances", maintenanceData);
-};
+// ✅ READ BY VOITURE (ADMIN)
+export const getMaintenancesByVoiture = (voitureId) =>
+  api.get(`/maintenances/voiture/${voitureId}`);
 
-export const terminerMaintenance = (id) => {
-    return api.put(`/maintenances/${id}/terminer`);
-};
+// ✅ CREATE (ADMIN)
+export const createMaintenance = (data) => api.post("/maintenances", data);
 
-export const deleteMaintenance = (id) => {
-    return api.delete(`/maintenances/${id}`);
-};
+// ✅ TERMINER (ADMIN)
+export const terminerMaintenance = (id) => api.put(`/maintenances/${id}/terminer`);
+
+// ✅ DELETE (ADMIN)
+export const deleteMaintenance = (id) => api.delete(`/maintenances/${id}`);
