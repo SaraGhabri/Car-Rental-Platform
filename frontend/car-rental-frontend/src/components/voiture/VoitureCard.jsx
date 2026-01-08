@@ -1,6 +1,7 @@
 // src/components/voiture/VoitureCard.jsx
 import { useState } from "react";
 import ReservationForm from "../reservation/ReservationForm";
+import { useAuth } from "../../context/AuthContext";
 
 export default function VoitureCard({ voiture }) {
   const [showForm, setShowForm] = useState(false);

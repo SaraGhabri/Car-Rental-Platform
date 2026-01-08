@@ -9,104 +9,64 @@ import Register from "../pages/Register";
 import Voitures from "../pages/Voitures";
 import VoitureDetails from "../pages/VoitureDetails";
 import MesReservations from "../pages/MesReservations";
-import Paiement from "../pages/Paiement";
+import MaintenanceAdmin from "../pages/admin/MaintenanceAdmin";
 
-// Admin Pages
-import Dashboard from "../pages/admin/Dashboard";
-import VoituresAdmin from "../pages/admin/VoituresAdmin";
-import ReservationsAdmin from "../pages/admin/ReservationsAdmin";
-import CategoriesAdmin from "../pages/admin/CategoriesAdmin";
-import MaintenancesAdmin from "../pages/admin/MaintenancesAdmin";
-import PaiementsAdmin from "../pages/admin/PaiementsAdmin";
+// Layout
+import MainLayout from "../components/common/MainLayout";
 
 // PrivateRoute Component
-const PrivateRoute = ({ children, role }) => {
-    const { user } = useAuth();
-    if (!user) return <Navigate to="/login" />;
-    if (role && user.role !== role) return <Navigate to="/" />;
+const PrivateRoute = ({ children, requireAdmin = false }) => {
+    const { user, isAuthenticated } = useAuth();
+
+    if (!isAuthenticated()) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (requireAdmin && (!user || user.role !== 'ROLE_ADMIN')) {
+        return <Navigate to="/" replace />;
+    }
+
     return children;
 };
 
 export default function AppRoutes() {
     return (
         <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
+            {/* Routes publiques avec layout */}
+            <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+            <Route path="/voitures" element={<MainLayout><Voitures /></MainLayout>} />
+            <Route path="/voitures/:id" element={<MainLayout><VoitureDetails /></MainLayout>} />
+
+            {/* Routes sans layout (fullscreen) */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/voitures" element={<Voitures />} />
-            <Route path="/voitures/:id" element={<VoitureDetails />} />
 
-            {/* User Protected Routes */}
+            {/* Routes protégées utilisateur */}
             <Route
                 path="/mes-reservations"
                 element={
                     <PrivateRoute>
-                        <MesReservations />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/paiement/:id"
-                element={
-                    <PrivateRoute>
-                        <Paiement />
+                        <MainLayout>
+                            <MesReservations />
+                        </MainLayout>
                     </PrivateRoute>
                 }
             />
 
-            {/* Admin Protected Routes */}
-            <Route
-                path="/admin"
-                element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <Dashboard />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/admin/voitures"
-                element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <VoituresAdmin />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/admin/reservations"
-                element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <ReservationsAdmin />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/admin/categories"
-                element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <CategoriesAdmin />
-                    </PrivateRoute>
-                }
-            />
+            {/* Routes admin protégées */}
             <Route
                 path="/admin/maintenances"
                 element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <MaintenancesAdmin />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/admin/paiements"
-                element={
-                    <PrivateRoute role="ROLE_ADMIN">
-                        <PaiementsAdmin />
+                    <PrivateRoute requireAdmin>
+                        <MainLayout>
+                            <MaintenanceAdmin />
+                        </MainLayout>
                     </PrivateRoute>
                 }
             />
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }

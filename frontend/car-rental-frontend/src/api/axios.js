@@ -2,47 +2,51 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:8081/api",
+    baseURL: "http://localhost:8081/api", // ← Déjà contient /api
+    headers: {
+        "Content-Type": "application/json"
+    }
 });
 
 // Interceptor pour ajouter le token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
-        console.log("🔑 Token dans localStorage:", token);
-        console.log("🌐 URL de la requête:", config.url);
-        console.log("📤 Méthode:", config.method);
-
         if (token) {
-            console.log("✅ Ajout du token aux headers");
             config.headers.Authorization = `Bearer ${token}`;
-            console.log("📋 Headers après ajout:", config.headers);
+            console.log(`✅ Token ajouté à ${config.method?.toUpperCase()} ${config.url}`);
         } else {
-            console.log("❌ Aucun token trouvé dans localStorage");
-            console.log("Tout localStorage:", localStorage);
+            console.warn(`⚠️  Pas de token pour ${config.method?.toUpperCase()} ${config.url}`);
         }
-
         return config;
     },
     (error) => {
-        console.error("❌ Erreur interceptor request:", error);
+        console.error("❌ Erreur interceptor:", error);
         return Promise.reject(error);
     }
 );
 
-// Interceptor pour les réponses
+// Interceptor réponse
 api.interceptors.response.use(
     (response) => {
-        console.log("✅ Réponse réussie:", response.status, response.config.url);
+        console.log(`✅ ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`);
         return response;
     },
     (error) => {
-        console.error("❌ Erreur réponse:", {
+        console.error(`❌ ${error.response?.status || "NO STATUS"} ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+        console.error("Erreur complète:", {
             status: error.response?.status,
-            url: error.config?.url,
             data: error.response?.data,
-            headers: error.config?.headers
+            headers: error.response?.headers
         });
+
+        if (error.response?.status === 403) {
+            console.error("🔐 Accès refusé (403). Vérifiez:");
+            console.error("1. Le token est-il valide?");
+            console.error("2. L'utilisateur a-t-il les droits?");
+            console.error("3. L'URL est-elle correcte?");
+        }
+
         return Promise.reject(error);
     }
 );
