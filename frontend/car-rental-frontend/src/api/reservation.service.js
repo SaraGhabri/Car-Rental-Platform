@@ -1,36 +1,37 @@
-// src/api/reservation.service.js
 import api from "./axios";
 
-export const createReservation = (reservationData) => {
-    // Essayez ces endpoints l'un après l'autre
-    const endpoints = [
-        "/api/reservations/create",  // Essai 1
-        "/api/reservations/api/reservations/create",  // Essai 2 (basé sur votre screenshot)
-        "/reservations/create",  // Essai 3
-        "/create"  // Essai 4
-    ];
+// ================= CREATE (CLIENT) =================
+export const createReservation = (reservationData) =>
+  api.post("/reservations/create", reservationData);
 
-    // Test automatique ou choisir manuellement
-    return api.post("/api/reservations/api/reservations/create", reservationData);
-};
+// ================= READ =================
 
-// Alternative : fonction de test
-export const testEndpoints = async () => {
-    const testData = { test: true };
-    const endpoints = [
-        "/api/reservations/create",
-        "/api/reservations/api/reservations/create",
-        "/reservations/create"
-    ];
+// Client (ses propres réservations)
+export const getMyReservations = () =>
+  api.get("/reservations/client");
 
-    for (const endpoint of endpoints) {
-        try {
-            const res = await api.post(endpoint, testData);
-            console.log(`✅ ${endpoint} :`, res.status);
-            return endpoint;
-        } catch (err) {
-            console.log(`❌ ${endpoint} :`, err.response?.status);
-        }
-    }
-    return null;
-};
+// Admin (toutes les réservations)
+export const getAllReservationsAdmin = () =>
+  api.get("/reservations/admin");
+
+// Une réservation par ID
+export const getReservationById = (id) =>
+  api.get(`/reservations/${id}`);
+
+// ================= ADMIN ACTIONS =================
+
+// Confirmer
+export const confirmReservation = (id) =>
+  api.put(`/reservations/${id}/confirm`);
+
+// Annuler
+export const cancelReservation = (id) =>
+  api.put(`/reservations/${id}/cancel`);
+
+// Terminer
+export const finishReservation = (id) =>
+  api.put(`/reservations/${id}/finish`);
+
+// Supprimer
+export const deleteReservation = (id) =>
+  api.delete(`/reservations/${id}`);

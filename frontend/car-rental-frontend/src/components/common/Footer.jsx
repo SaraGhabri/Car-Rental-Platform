@@ -18,7 +18,7 @@ import {
 
 const Footer = () => {
     return (
-        <footer className="bg-dark text-white pt-5 pb-4 mt-auto">
+        <footer className="bg-dark text-white pt-5 pb-4 mt-auto mb-0">
             <div className="container">
                 <div className="row">
                     {/* Colonne 1: À propos */}

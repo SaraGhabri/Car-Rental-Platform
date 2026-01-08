@@ -21,36 +21,44 @@ const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError("");
-        setIsLoading(true);
 
-        try {
-            const res = await authService.login({ username, password });
-            const token = res.data.token;
 
-            try {
-                const decoded = jwtDecode(token);
-                const role = decoded.roles?.[0] || "ROLE_USER";
-                login(token, role);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
+  setIsLoading(true);
 
-                setTimeout(() => {
-                    navigate("/voitures");
-                }, 300);
+  try {
+    const res = await authService.login({ username, password });
+    const token = res.data.token;
 
-            } catch (jwtError) {
-                console.error("Erreur décodage JWT:", jwtError);
-                setError("Token d'authentification invalide");
-            }
+    const decoded = jwtDecode(token);
 
-        } catch (err) {
-            console.error("Erreur de connexion:", err);
-            setError(err.response?.data?.message || "Nom d'utilisateur ou mot de passe incorrect");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // roles peut être ["USER"] ou ["ROLE_USER"] ou même "USER"
+    const roles = Array.isArray(decoded.roles)
+      ? decoded.roles
+      : decoded.roles
+      ? [decoded.roles]
+      : [];
+
+    const isAdmin = roles.some((r) => r === "ADMIN" || r === "ROLE_ADMIN");
+
+    // stocker token + role dans ton contexte
+    login(token, isAdmin ? "ROLE_ADMIN" : "ROLE_USER");
+
+    // ✅ redirect
+    navigate(isAdmin ? "/admin/dashboard" : "/user/voitures", { replace: true });
+
+  } catch (err) {
+    console.error("Erreur de connexion:", err);
+    setError(
+      err.response?.data?.message || "Nom d'utilisateur ou mot de passe incorrect"
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
     return (
         <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
